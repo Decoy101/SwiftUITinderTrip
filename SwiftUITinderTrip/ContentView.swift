@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct ContentView: View {
-
+  
     var body: some View {
-        Text("Hello World")
+        CardView(image:"yosemite-usa",title:"Yosemita-USA")
     }
     
 }
@@ -20,4 +20,31 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
+
+
+struct CardView: View{
+    let image: String
+    let title: String
+    var body: some View{
+        Image(image)
+            .resizable()
+            .scaledToFill()
+            .frame(minWidth:0, maxWidth: .infinity)
+            .cornerRadius(10)
+            .padding(.horizontal,15)
+            .overlay(alignment: .bottom){
+                VStack{
+                    Text(title)
+                        .font(.system(.headline, design: .rounded))
+                        .fontWeight(.bold)
+                        .padding(.horizontal, 30)
+                        .padding(.vertical,10 )
+                        .background(Color.white)
+                        
+                }
+                .padding(.bottom,50)
+            }
+    }
+}
+
 
