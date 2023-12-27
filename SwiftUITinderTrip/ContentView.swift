@@ -39,6 +39,8 @@ struct ContentView: View {
     @GestureState private var dragState = DragState.inactive
     private let dragThreshold: CGFloat = 80.0
     @State private var lastIndex = 1
+    @State private var removalTransition = AnyTransition.trailingBottom
+    
     
    
     
@@ -68,6 +70,7 @@ struct ContentView: View {
                         .scaleEffect(self.dragState.isDragging && self.isTopCard(cardView: cardView) ? 0.95 : 1.0)
                         .rotationEffect(Angle(degrees: Double(self.isTopCard(cardView: cardView) ? self.dragState.translation.width/10 : 0)))
                         .animation(.interpolatingSpring(stiffness:180, damping: 100), value: self.dragState.translation)
+                        .transition(self.removalTransition)
                         .gesture(LongPressGesture(minimumDuration:0.01).sequenced(before: DragGesture())
                             .updating(self.$dragState, body:{(value,state, transaction)in
                                 switch value{
@@ -79,6 +82,20 @@ struct ContentView: View {
                                     break
                                 }
                             })
+                                .onChanged({
+                                    (value) in
+                                    guard case .second(true, let drag?) = value else{
+                                        return
+                                    }
+                                    if drag.translation.width < -self.dragThreshold {
+                                        self.removalTransition = .leadingBottom
+                                    }
+                                    if drag.translation.width > self.dragThreshold {
+                                        self.removalTransition = .trailingBottom
+                                    }
+                                }
+                                           
+                                          )
                                 .onEnded({ (value) in
                                     guard case .second(true, let drag?) = value else{
                                         return
@@ -103,6 +120,23 @@ struct ContentView: View {
     
     
     
+}
+
+extension AnyTransition {
+    static var trailingBottom: AnyTransition{
+        AnyTransition.asymmetric(
+            insertion:.identity,
+            removal: AnyTransition.move(edge: .trailing).combined(with: .move(edge:.bottom))
+        
+        )
+    }
+    
+    static var leadingBottom: AnyTransition{
+        AnyTransition.asymmetric(
+            insertion: .identity,
+            removal: AnyTransition.move(edge: .leading).combined(with: .move(edge: .bottom))
+        )
+    }
 }
 
 struct ContentView_Previews: PreviewProvider {
